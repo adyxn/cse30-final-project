@@ -10,7 +10,6 @@ int main(){
 
     return app.run();
 
-    int x = 1;
 
     // GameState state;
     // state.play(0, 0);
