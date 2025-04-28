@@ -46,5 +46,3 @@ Settings can be accessed through the "Settings" option in the main menu.
 | **Person 2** | Frontend UI Developer | - Built and updated Connect Four grid interface using Bobcat UI
 | **Person 3** | AI Developer | - Developed Min-Max based AI agent for autonomous gameplay
 | **Person 4** | Settings + Integration + Testing | - Created Settings interface (board size options, AI toggle)
-
-## 📋 Project Structure
