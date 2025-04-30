@@ -28,6 +28,8 @@ inline std::ostream& operator<<(std::ostream& os, const Vec& v) {
     return os;
 }
 
+
+
 class GameState {
     int** grid;
     bool currentTurn;

@@ -31,15 +31,14 @@ GameInterface::GameInterface(int x, int y, int w, int h, GameState initialState)
 void GameInterface::handleClick(Widget* sender) {
     for (int col = 0; col < columnButtons.size(); col++) {
         if (sender == columnButtons[col]) {
-            bool moveSuccess = state.play(col);
-            if (!moveSuccess) return;
+            if (!state.play(col)) return;
 
             updateButtons();
             if (checkWinningConditions()) return;
 
             if (state.getEnabledAI()) {
-                Vec aiMove = Agent::play(state);
-                state.play(aiMove.y);
+                Vec move = Agent::play(state);
+                state.play(move.y);
                 updateButtons();
                 checkWinningConditions();
             }
@@ -52,11 +51,11 @@ void GameInterface::handleClick(Widget* sender) {
 bool GameInterface::checkWinningConditions() {
     if (state.gameOver()) {
         if (state.hasWon(0)) {
-            showMessage("Player X has won.\nClick Close to start a new game.", "Game Over");
+            showMessage("Red wins!\nClick Close to start a new game.", "Game Over");
         } else if (state.hasWon(1)) {
-            showMessage("Player O has won.\nClick Close to start a new game.", "Game Over");
+            showMessage("Blue wins!\nClick Close to start a new game.", "Game Over");
         } else {
-            showMessage("It is a tie.\nClick Close to start a new game.", "Game Over");
+            showMessage("It's a tie.\nClick Close to start a new game.", "Game Over");
         }
         reset();
         return true;
@@ -72,10 +71,12 @@ void GameInterface::initButtons() {
 
     for (int col = 0; col < cols; col++) {
         int xCoord = x + col * cellW;
-        auto* dropBtn = new Button(xCoord, y, cellW, 40, "↓");
+        Button* dropBtn = new Button(xCoord, y, cellW, 40, "↓");
         dropBtn->labelsize(24);
         dropBtn->box(FL_ROUND_UP_BOX);
-        ON_CLICK(dropBtn, GameInterface::handleClick);
+        dropBtn->callback([](Fl_Widget* btn, void* data) {
+            static_cast<GameInterface*>(data)->handleClick(btn);
+        }, this);
         columnButtons.append(dropBtn);
     }
 
@@ -84,11 +85,11 @@ void GameInterface::initButtons() {
         for (int col = 0; col < cols; col++) {
             int xCoord = x + col * cellW;
             int yCoord = y + 50 + row * cellH;
-            auto* gridBtn = new Button(xCoord, yCoord, cellW, cellH, "");
-            gridBtn->labelsize(20);
-            gridBtn->deactivate();
-            gridBtn->box(FL_DOWN_BOX);
-            rowButtons.append(gridBtn);
+            Button* cell = new Button(xCoord, yCoord, cellW, cellH, "");
+            cell->labelsize(20);
+            cell->deactivate();
+            cell->box(FL_DOWN_BOX);
+            rowButtons.append(cell);
         }
         boardGrid.append(rowButtons);
     }
@@ -125,11 +126,11 @@ void GameInterface::updateButtons() {
             boardGrid[row][col]->label(mark);
 
             if (mark == "X") {
-                boardGrid[row][col]->color(fl_rgb_color(255, 0, 0));  // red for player X
+                boardGrid[row][col]->color(fl_rgb_color(255, 0, 0));  // Red
             } else if (mark == "O") {
-                boardGrid[row][col]->color(fl_rgb_color(0, 0, 255));  // blue for player O
+                boardGrid[row][col]->color(fl_rgb_color(0, 0, 255));  // Blue
             } else {
-                boardGrid[row][col]->color(fl_rgb_color(200, 200, 200)); // light gray for empty
+                boardGrid[row][col]->color(fl_rgb_color(200, 200, 200));  // Gray
             }
 
             boardGrid[row][col]->redraw();

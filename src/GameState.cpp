@@ -36,6 +36,8 @@ GameState::GameState(const GameState& other) {
     }
 }
 
+
+
 bool GameState::operator==(const GameState& other) {
     if (size != other.size || currentTurn != other.currentTurn ||
         turnCount != other.turnCount || done != other.done ||
