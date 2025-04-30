@@ -123,6 +123,16 @@ void GameInterface::updateButtons() {
         for (int col = 0; col < boardGrid[row].size(); col++) {
             string mark = state.squareState(row, col);
             boardGrid[row][col]->label(mark);
+
+            if (mark == "X") {
+                boardGrid[row][col]->color(fl_rgb_color(255, 0, 0));  // red for player X
+            } else if (mark == "O") {
+                boardGrid[row][col]->color(fl_rgb_color(0, 0, 255));  // blue for player O
+            } else {
+                boardGrid[row][col]->color(fl_rgb_color(200, 200, 200)); // light gray for empty
+            }
+
+            boardGrid[row][col]->redraw();
         }
     }
 }

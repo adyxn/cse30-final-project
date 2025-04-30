@@ -8,7 +8,7 @@ using namespace bobcat;
 using namespace std;
 
 Application::Application(){
-    window = new Window(100, 100, 400, 400, "Tic-Tac-Toe");
+    window = new Window(100, 100, 400, 400, "Connect 4");
 
     state = GameState();
     state.enableAI();
