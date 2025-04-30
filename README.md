@@ -1,11 +1,11 @@
-# 🎯 Connect Four Final Project
+# Connect Four Final Project
 
 Welcome to our Board Game AI Final Project!  
 We developed an autonomous Connect Four game using Bobcat UI and a custom Min-Max AI agent.
 
 ---
 
-## 📜 Overview
+##  Overview
 This project is a two-player Connect Four game that can be played:
 - Human vs Human
 - Human vs AI (autonomous agent)
@@ -14,14 +14,14 @@ The AI uses a Min-Max search strategy to make rational moves based on the curren
 
 ---
 
-## 🛠️ Technologies Used
+##  Technologies Used
 - C++
 - Bobcat UI (FLTK-based frontend library)
 - Custom data structures (ArrayList, LinkedList, Queue, Stack, etc.)
 
 ---
 
-## 🎮 How to Play
+## How to Play
 1. Choose "New Game" from the menu to start.
 2. Click on a column to drop your disc.
 3. The disc falls to the lowest available spot.
@@ -30,7 +30,7 @@ The AI uses a Min-Max search strategy to make rational moves based on the curren
 
 ---
 
-## ⚙️ Settings
+##  Settings
 - Change board size (e.g., 5x5, 6x7, 7x8).
 - Enable or disable AI opponent.
 
@@ -38,7 +38,7 @@ Settings can be accessed through the "Settings" option in the main menu.
 
 ---
 
-## 👥 Team Contributions
+##  Team Contributions
 
 | Member Name | Role | Main Contributions |
 |:------------|:-----|:--------------------|
