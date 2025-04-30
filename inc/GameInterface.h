@@ -9,7 +9,7 @@
 #include <GameState.h>
 #include <string>
 
-class GameInterface{
+class GameInterface {
     int x;
     int y;
     int w;
@@ -19,28 +19,28 @@ class GameInterface{
 
     bobcat::TextBox *statusBar;
 
-    ArrayList<ArrayList<bobcat::Button*>> buttons;
+    // Top buttons for dropping discs
+    ArrayList<bobcat::Button*> columnButtons;
 
-    void handleClick(bobcat::Widget *sender);
+    // 2D grid for displaying placed discs
+    ArrayList<ArrayList<bobcat::Button*>> boardGrid;
 
-    void initButtons();
-    void updateButtons();
-    void showButtons();
-    void hideButtons();
-
-    bool checkWinningConditions();
+    void initButtons();                      // Set up column + grid buttons
+    void handleClick(bobcat::Widget *sender); // Handle drop button clicks
+    void updateButtons();                    // Refresh grid visuals
+    void showButtons();                      // Show all buttons
+    void hideButtons();                      // Hide all buttons
+    bool checkWinningConditions();           // Show win/tie messages
 
 public:
-
     GameInterface(int x, int y, int w, int h, GameState initialState);
 
-    void reset();
-    void hide();
-    void show();
+    void reset();                            // Reset game state and UI
+    void hide();                             // Hide full interface
+    void show();                             // Show full interface
 
     GameState getState() const;
     void setState(GameState state);
-
 };
 
 #endif

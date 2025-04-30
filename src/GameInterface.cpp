@@ -27,30 +27,28 @@ GameInterface::GameInterface(int x, int y, int w, int h, GameState initialState)
 }
 
 void GameInterface::handleClick(Widget *sender){
-    for (int i = 0; i < state.gridSize(); i++){
-        for (int j = 0; j < state.gridSize(); j++){
-            if (sender == buttons[i][j]){
-                state.play(i, j);
+   // Loop through column buttons to see which was clicked
+    for (int col = 0; col < columnButtons.size(); col++) {
+        if (sender == columnButtons[col]) {
+            bool moveSuccess = state.play(col);
+            if (!moveSuccess) return;  // Column full
+               updateButtons();
+
+            if (checkWinningConditions()) return;
+
+            if (state.getEnabledAI()) {
+                Vec aiMove = Agent::play(state);  // Agent returns (row, col) or just col
+                state.play(aiMove.y);  // assuming Agent returns Vec(x=row, y=col)
                 updateButtons();
 
-                bool done = checkWinningConditions();
-            
-                if (!done){
-                    if (state.getEnabledAI()){
-                        Vec move = Agent::play(state);
-                        state.play(move.x, move.y);
-                        updateButtons();
-                        checkWinningConditions();
-                    }
-                }
-
-                return;
+                checkWinningConditions();
             }
+
+            return;
         }
     }
-    
 }
-
+    
 bool GameInterface::checkWinningConditions(){
     bool result = state.gameOver();
     if (state.gameOver()){
@@ -68,55 +66,75 @@ bool GameInterface::checkWinningConditions(){
     return result;
 }
 
-void GameInterface::initButtons(){
+void GameInterface::initButtons() {
+    int cols = 7;
+    int rows = 6;
+    int cellW = w / cols;
+    int cellH = (h - 100) / rows;
 
-    for (int i = 0; i < 5; i++){
-        ArrayList<Button*> row;
-        for (int j = 0; j < 5; j++){
-            Button* curr = new Button(0, 0, 1, 1);
-            row.append(curr);
-        }
-        buttons.append(row);
+    for (int col = 0; col < cols; col++) {
+        int xCoord = x + col * cellW;
+        int yCoord = y;
+
+        auto* dropBtn = new bobcat::Button(xCoord, yCoord, cellW, 40, "↓");
+        dropBtn->labelsize(24);
+        dropBtn->box(FL_ROUND_UP_BOX);
+        ON_CLICK(dropBtn, GameInterface::handleClick);
+        columnButtons.append(dropBtn);
     }
 
-    for (int i = 0; i < buttons.size(); i++){
-        for (int j = 0; j < buttons[i].size(); j++){
-            buttons[i][j]->labelsize(32);
-            ON_CLICK(buttons[i][j], GameInterface::handleClick);
+    for (int row = 0; row < rows; row++) {
+        ArrayList<Button*> rowButtons;
+        for (int col = 0; col < cols; col++) {
+            int xCoord = x + col * cellW;
+            int yCoord = y + 50 + row * cellH;
+
+            auto* gridBtn = new bobcat::Button(xCoord, yCoord, cellW, cellH, "");
+            gridBtn->labelsize(20);
+            gridBtn->deactivate();
+            gridBtn->box(FL_DOWN_BOX);
+            rowButtons.append(gridBtn);
+        }
+        boardGrid.append(rowButtons);
+    }
+}
+
+
+void GameInterface::showButtons() {
+    for (int i = 0; i < columnButtons.size(); i++) {
+        columnButtons[i]->show();
+    }
+
+    for (int i = 0; i < boardGrid.size(); i++) {
+        for (int j = 0; j < boardGrid[i].size(); j++) {
+            boardGrid[i][j]->show();
         }
     }
 }
 
-void GameInterface::showButtons(){
-    int btnW = w / state.gridSize();
-    int btnH = h / state.gridSize();
-    for (int i = 0; i < state.gridSize(); i++){
-        int btnY = y + btnH * i;
-        for (int j = 0; j < state.gridSize(); j++){
-            int btnX = x + btnW * j;
 
-            buttons[i][j]->resize(btnX, btnY, btnW, btnH);
-            buttons[i][j]->label(state.squareState(i, j));
-            buttons[i][j]->show();
+void GameInterface::hideButtons() {
+    for (int i = 0; i < columnButtons.size(); i++) {
+        columnButtons[i]->hide();
+    }
+
+    for (int i = 0; i < boardGrid.size(); i++) {
+        for (int j = 0; j < boardGrid[i].size(); j++) {
+            boardGrid[i][j]->hide();
         }
     }
 }
 
-void GameInterface::hideButtons(){
-    for (int i = 0; i < state.gridSize(); i++){
-        for (int j = 0; j < state.gridSize(); j++){
-            buttons[i][j]->hide();
+
+void GameInterface::updateButtons() {
+    for (int row = 0; row < boardGrid.size(); row++) {
+        for (int col = 0; col < boardGrid[row].size(); col++) {
+            std::string mark = state.squareState(row, col);
+            boardGrid[row][col]->label(mark);
         }
     }
 }
 
-void GameInterface::updateButtons(){
-    for (int i = 0; i < state.gridSize(); i++){
-        for (int j = 0; j < state.gridSize(); j++){
-            buttons[i][j]->label(state.squareState(i, j));
-        }
-    }
-}
 
 void GameInterface::show() {
     showButtons();
