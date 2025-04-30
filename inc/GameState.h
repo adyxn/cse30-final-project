@@ -41,14 +41,16 @@ class GameState {
 public:
     GameState(int size = 3);
     GameState(const GameState& other);
+    ~GameState();
+
     bool operator==(const GameState& other);
     GameState& operator=(const GameState& other);
 
+    bool play(int col);           // ADDED: Single-column play for Connect Four
+    bool play(int x, int y);      // Legacy / manual play support
+
     bool hasWon(int player);
     bool gameOver() const;
-
-    bool play(int x, int y);         // Tic-Tac-Toe
-    bool play(int col);              // Connect Four (new overload)
 
     int gridSize() const;
     std::string squareState(int i, int j) const;
@@ -59,9 +61,8 @@ public:
 
     int getCurrentTurn() const;
     Vec getLastMove() const;
-    void reset();
 
-    ~GameState();
+    void reset();
 
     friend std::ostream& operator<<(std::ostream& os, const GameState& state);
 };
@@ -77,18 +78,14 @@ inline std::ostream& operator<<(std::ostream& os, const GameState& state) {
         os << "--- ";
     }
     os << std::endl;
-    for (int i = 0; i < state.size; i++) {
+    for (int i = 0; i < 6; i++) {
         os << i << " ";
-        for (int j = 0; j < state.size; j++) {
+        for (int j = 0; j < 7; j++) {
             char c = ' ';
-            if (state.grid[i][j] == 0) {
-                c = 'X';
-            }
-            else if (state.grid[i][j] == 1) {
-                c = 'O';
-            }
+            if (state.grid[i][j] == 0) c = 'X';
+            else if (state.grid[i][j] == 1) c = 'O';
             os << "| " << c << " ";
-            if (j == state.size - 1) os << "|";
+            if (j == 6) os << "|";
         }
         os << std::endl << "   ";
         for (int j = 0; j < state.size; j++) {
@@ -96,6 +93,7 @@ inline std::ostream& operator<<(std::ostream& os, const GameState& state) {
         }
         os << std::endl;
     }
+
     return os;
 }
 
