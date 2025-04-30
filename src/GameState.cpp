@@ -149,24 +149,20 @@ bool GameState::hasWon(int player){
 }
 
 
-bool GameState::play(int x, int y){
-    if (grid[x][y] != -1){
-        return false;
+bool GameState::play(int col) {
+    for (int row = size - 1; row >= 0; row--) {
+        if (grid[row][col] == -1) {
+            grid[row][col] = currentTurn;
+            lastMove.set(row, col);
+            turnCount++;
+            currentTurn = !currentTurn;
+            if (turnCount == size * size || hasWon(0) || hasWon(1)) {
+                done = true;
+            }
+            return true;
+        }
     }
-
-    grid[x][y] = currentTurn;
-    currentTurn = !currentTurn;
-    turnCount++;
-    lastMove.set(x, y);
-
-    if (turnCount == size * size){
-        done = true;
-    }
-    else if (hasWon(0) || hasWon(1)){
-        done = true;
-    }
-
-    return true;
+    return false; // column is full
 }
 
 int GameState::gridSize() const {
