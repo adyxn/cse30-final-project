@@ -3,8 +3,15 @@
 #include "Graph.h"
 #include <iostream>
 #include <Agent.h>
+#include "ArrayList.h"
 
 using namespace std;
+
+const int AI_Agent = 1;
+const int Human = 0;
+const int max_depth = 4;
+const int inf_pos = 100000;
+const int inf_neg = -100000;
 
 struct GameTreeNode{
     Vertex<GameState>* vertex;
@@ -16,72 +23,133 @@ struct GameTreeNode{
     }
 };
 
-Vec findFirstAvailable(GameState state){
-    for (int i = 0; i < state.gridSize(); i++){
-        for (int j = 0; j < state.gridSize(); j++){
-            if (state.squareState(i, j) == ""){
-                return Vec(i, j);
+    ArrayList<int> orderedCol(int gridSize) {
+        ArrayList<int> order;
+        int center = gridSize / 2;
+        order.append(center);
+        for (int offset = 1; offset <= center; ++offset) {
+            if (center - offset >= 0){
+                order.append(center - offset);
+            }
+            if (center + offset < gridSize){
+                order.append(center + offset);
             }
         }
+        return order;
     }
 
-    return Vec(0, 0);
-}
+    bool validSpot(GameState& state, int col) {
+        for (int row = state.gridSize() - 1; row >= 0; row--){
+            if (state.squareState(col, row) == "") {
+                return true;
+            }
+        }
+        return false;
+    }
 
-ArrayList<Vec> openSquares(GameState state){
-    ArrayList<Vec> result;
-    if (!state.gameOver()){
-        for (int i = 0; i < state.gridSize(); i++){
-            for (int j = 0; j < state.gridSize(); j++){
-                if (state.squareState(i, j) == ""){
-                    result.append(Vec(i,j));
+    GameState simulateMove(GameState state, int col) {
+        for (int row = state.gridSize()-1; row >= 0; row--){
+            if (state.squareState(col, row) == "") {
+                state.play(col,row);
+                break;
+            }
+        }
+        return state;
+    }
+
+    bool checkLine (GameState& s, int p, int x, int y, int dx, int dy, int len, int sz) {
+            for (int i = 0; i < len; ++i){
+                int nx = x+i*dx;
+                int ny = y+i*dy;
+                if (nx < 0 || ny < 0 || nx >= sz){
+                    return false;
+                }
+                if (s.squareState(nx, ny) != s.playerStr(p)){
+                    return false;
+                }
+            }
+            return true;
+        }
+
+    int countStreak (GameState& state, int player, int streakNum) {
+        int count = 0;
+        int size = state.gridSize();
+
+        for (int x = 0; x < size; ++x) {
+            for (int y = 0; y < size; ++y) {
+                if (checkLine(state, player, x, y, 1, 0, streakNum, size)){
+                    count++;
+                }
+                if (checkLine(state, player, x, y, 0, 1, streakNum, size)){
+                    count++;
+                }
+                if (checkLine(state, player, x, y, 1, 1, streakNum, size)){
+                    count++;
+                }
+                if (checkLine(state, player, x, y, 1, -1, streakNum, size)){
+                    count++;
                 }
             }
         }
+        return count;
     }
-    return result;
-}
 
-int Agent::getReward(Vertex<GameState>* start, int player){
-    // Evaluate a particular vertex in the state space
-    // from the point of view of player
+    int evaluate (GameState& state, int player){
+        if (state.hasWon(AI_Agent)){
+            return 1000;
+        }
+        if (state.hasWon(Human)){
+            return -1000;
+        }
 
-    // If it is a terminal state, evaluate it directly
-    if (start->neighbors.size() == 0){
-        // If we won, maximum reward
-        if (start->data.hasWon(player)){
-            return 100;
-        }
-        // if we lost maximum penalty
-        else if (start->data.hasWon(!player)){
-            return -100;
-        }
-        // otherwise somewhere in-between
-        else{
-            return 50;
-        }
+        int score = 0;
+        score += countStreak(state, AI_Agent, 3) * 100;
+        score += countStreak(state, AI_Agent, 2) * 10;
+        score -= countStreak(state, Human, 3) * 100;
+        score -= countStreak(state, Human, 2) * 10;
     }
-    // If it is not a terminal state (it has children),
-    // we evaluate each child and pick the maximum or the minimum child
-    // depending on whose turn it is
-    else{
-        int reward = getReward(start->neighbors[0]->location, player);
-        for (int i = 1; i < start->neighbors.size(); i++){
-            int curr = getReward(start->neighbors[i]->location, player);
-            if (start->data.getCurrentTurn() == player){
-                if (curr > reward){
-                    reward = curr;
+
+    int minimax(Vertex<GameState>* node, int depth, int x, int y, bool maximizingPlayer, int player) {
+        GameState& state = node-> data;
+
+        if (depth == 0 || state.gameOver() || node->neighbors.size() == 0) {
+            return evaluate(state, player);
+        }
+
+        if (maximizingPlayer) {
+            int maxEval = inf_neg;
+            for (int i = 0; i < node->neighbors.size(); i++) {
+                int eval = minimax (node->neighbors[i]-> location, depth - 1, x, y, false, player);
+                if (eval > maxEval) {
+                    maxEval = eval;
+                }
+                if (eval > x) {
+                    x = eval;
+                }
+                if (y <= x) {
+                    break;
                 }
             }
-            else{
-                if (curr < reward){
-                    reward = curr;
+            return maxEval;
+        }
+        else {
+            int minEval = inf_pos;
+            for (int i = 0; i < node->neighbors.size(); i++){
+                int eval = minimax(node->neighbors[i]-> location, depth-1, x, y, true, player){
+                    if (eval < minEval){
+                        minEval = eval;
+                    }
+                    if (eval < y) {
+                        y = eval;
+                    }
+                    if (y <= x) {
+                        break;
+                    }
                 }
             }
+            return minEval;
         }
-        return reward;
     }
-}
 
 Vec Agent::play(GameState state){
     Vertex<GameState>* root = new Vertex<GameState>(state);
