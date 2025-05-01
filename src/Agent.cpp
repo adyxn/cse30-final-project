@@ -1,8 +1,10 @@
+#include "GameState.h"
 #include "Queue.h"
 #include "Vertex.h"
 #include "Graph.h"
 #include <iostream>
 #include <Agent.h>
+#include <pthread.h>
 #include "ArrayList.h"
 
 using namespace std;
@@ -12,193 +14,173 @@ const int Human = 0;
 const int max_depth = 4;
 const int inf_pos = 100000;
 const int inf_neg = -100000;
+std::string playerSymbol(int player) {
+    return (player == AI_Agent) ? "Red" : "Blue";
+}
 
-struct GameTreeNode{
-    Vertex<GameState>* vertex;
-    int depth;
-
-    GameTreeNode(Vertex<GameState>* vertex = nullptr, int depth = 0){
-        this->vertex = vertex;
-        this->depth = depth;
-    }
-};
-
-    ArrayList<int> orderedCol(int gridSize) {
-        ArrayList<int> order;
-        int center = gridSize / 2;
-        order.append(center);
-        for (int offset = 1; offset <= center; ++offset) {
-            if (center - offset >= 0){
-                order.append(center - offset);
-            }
-            if (center + offset < gridSize){
-                order.append(center + offset);
-            }
+// prefer middle columns
+ArrayList<int> orderedCol(int gridSize) {
+    ArrayList<int> order;
+    int center = gridSize / 2;
+    order.append(center);
+    for (int offset = 1; offset <= center; ++offset) {
+        if (center - offset >= 0){
+            order.append(center - offset);
         }
-        return order;
-    }
-
-    bool validSpot(GameState& state, int col) {
-        for (int row = state.gridSize() - 1; row >= 0; row--){
-            if (state.squareState(col, row) == "") {
-                return true;
-            }
+        if (center + offset < gridSize){
+            order.append(center + offset);
         }
-        return false;
     }
+    return order;
+}
 
-    GameState simulateMove(GameState state, int col) {
-        for (int row = state.gridSize()-1; row >= 0; row--){
-            if (state.squareState(col, row) == "") {
-                state.play(col,row);
-                break;
-            }
-        }
-        return state;
-    }
-
-    bool checkLine (GameState& s, int p, int x, int y, int dx, int dy, int len, int sz) {
-            for (int i = 0; i < len; ++i){
-                int nx = x+i*dx;
-                int ny = y+i*dy;
-                if (nx < 0 || ny < 0 || nx >= sz){
-                    return false;
-                }
-                if (s.squareState(nx, ny) != s.playerStr(p)){
-                    return false;
-                }
-            }
+// check if spot is valid or not
+bool validSpot(GameState& state, int col) {
+    for (int row = state.gridSize() - 1; row >= 0; row--){
+        if (state.squareState(col, row) == "") {
             return true;
         }
+    }
+    return false;
+}
 
-    int countStreak (GameState& state, int player, int streakNum) {
-        int count = 0;
-        int size = state.gridSize();
+// simulate move, playing in first row possible
+GameState simulateMove(GameState state, int col) {
+    for (int row = state.gridSize()-1; row >= 0; row--){
+        if (state.squareState(col, row) == "") {
+            state.play(col,row);
+            break;
+        }
+    }
+    return state;
+}
 
-        for (int x = 0; x < size; ++x) {
-            for (int y = 0; y < size; ++y) {
-                if (checkLine(state, player, x, y, 1, 0, streakNum, size)){
-                    count++;
-                }
-                if (checkLine(state, player, x, y, 0, 1, streakNum, size)){
-                    count++;
-                }
-                if (checkLine(state, player, x, y, 1, 1, streakNum, size)){
-                    count++;
-                }
-                if (checkLine(state, player, x, y, 1, -1, streakNum, size)){
-                    count++;
-                }
+// checking for a line, a streak of len at x,y in dx,dy directions
+bool checkLine (GameState& s, int p, int x, int y, int dx, int dy, int len, int sz) {
+        for (int i = 0; i < len; ++i){
+            int nx = x+i*dx;
+            int ny = y+i*dy;
+            if (nx < 0 || ny < 0 || nx >= sz){
+                return false;
+            }
+            if (s.squareState(nx, ny) != playerSymbol(p)){
+                return false;
             }
         }
-        return count;
+        return true;
     }
 
-    int evaluate (GameState& state, int player){
-        if (state.hasWon(AI_Agent)){
-            return 1000;
-        }
-        if (state.hasWon(Human)){
-            return -1000;
-        }
+// counts win streak
+int countStreak (GameState& state, int player, int streakNum) {
+    int count = 0;
+    int size = state.gridSize();
 
-        int score = 0;
-        score += countStreak(state, AI_Agent, 3) * 100;
-        score += countStreak(state, AI_Agent, 2) * 10;
-        score -= countStreak(state, Human, 3) * 100;
-        score -= countStreak(state, Human, 2) * 10;
+    for (int x = 0; x < size; ++x) {
+        for (int y = 0; y < size; ++y) {
+            if (checkLine(state, player, x, y, 1, 0, streakNum, size)){
+                count++;
+            }
+            if (checkLine(state, player, x, y, 0, 1, streakNum, size)){
+                count++;
+            }
+            if (checkLine(state, player, x, y, 1, 1, streakNum, size)){
+                count++;
+            }
+            if (checkLine(state, player, x, y, 1, -1, streakNum, size)){
+                count++;
+            }
+        }
+    }
+    return count;
+}
+
+// evaluates function for minimax
+int evaluate (GameState& state){
+    if (state.hasWon(AI_Agent)){
+        return 1000;
+    }
+    if (state.hasWon(Human)){
+        return -1000;
     }
 
-    int minimax(Vertex<GameState>* node, int depth, int x, int y, bool maximizingPlayer, int player) {
-        GameState& state = node-> data;
+    int score = 0;
+    score += countStreak(state, AI_Agent, 3) * 100;
+    score += countStreak(state, AI_Agent, 2) * 10;
+    score -= countStreak(state, Human, 3) * 100;
+    score -= countStreak(state, Human, 2) * 10;
 
-        if (depth == 0 || state.gameOver() || node->neighbors.size() == 0) {
-            return evaluate(state, player);
+    return score;
+}
+
+// minimax function
+int minimax(GameState state, int depth, int alpha, int beta, bool maximizingPlayer) {
+    if (depth == 0 || state.gameOver()) {
+        return evaluate(state);
+    }
+
+    int gridSize = state.gridSize();
+    ArrayList<int> columns = orderedCol(gridSize);
+
+    if (maximizingPlayer) {
+        int maxEval = inf_neg;
+        for (int i = 0; i < columns.size(); i++) {
+            int col = columns[i];
+            if (validSpot(state, col)) {
+                GameState child = simulateMove(state, col);
+                int eval = minimax(child, depth-1, alpha, beta, false);
+                maxEval = max(maxEval, eval);
+                alpha = max(alpha, eval);
+                if (beta <= alpha) {
+                    break;
+                }
+
+            }
         }
-
-        if (maximizingPlayer) {
-            int maxEval = inf_neg;
-            for (int i = 0; i < node->neighbors.size(); i++) {
-                int eval = minimax (node->neighbors[i]-> location, depth - 1, x, y, false, player);
-                if (eval > maxEval) {
-                    maxEval = eval;
-                }
-                if (eval > x) {
-                    x = eval;
-                }
-                if (y <= x) {
+        return maxEval;
+    }
+    else
+    {
+        int minEval = inf_pos;
+        for (int i = 0; i <columns.size(); i++){
+            int col = columns[i];
+            if (validSpot(state, col)) {
+                GameState child = simulateMove(state, col);
+                int eval = minimax(child, depth-1, alpha, beta, true);
+                minEval = min(minEval, eval);
+                beta = min(beta, eval);
+                if (beta <= alpha){
                     break;
                 }
             }
-            return maxEval;
         }
-        else {
-            int minEval = inf_pos;
-            for (int i = 0; i < node->neighbors.size(); i++){
-                int eval = minimax(node->neighbors[i]-> location, depth-1, x, y, true, player){
-                    if (eval < minEval){
-                        minEval = eval;
-                    }
-                    if (eval < y) {
-                        y = eval;
-                    }
-                    if (y <= x) {
-                        break;
-                    }
-                }
-            }
-            return minEval;
-        }
+        return minEval;
     }
+}
 
+// AI_Agent's move function
 Vec Agent::play(GameState state){
-    Vertex<GameState>* root = new Vertex<GameState>(state);
-    Graph<GameState> gameSpace;
-    gameSpace.addVertex(root);
+    int gridSize = state.gridSize();
+    ArrayList<int> columns = orderedCol(gridSize);
 
-    Queue<GameTreeNode> frontier;
-    frontier.enqueue(GameTreeNode(root, 0));
+    int goalScore = inf_neg;
+    int bestCol = -1;
 
-    int limit = 3;
-    while (!frontier.isEmpty()){
-        GameTreeNode gtn = frontier.dequeue();
-        Vertex<GameState>* node = gtn.vertex;
-        int depth = gtn.depth;
-        ArrayList<Vec> moves = openSquares(node->data);
+    for (int i = 0; i < columns.size(); i++) {
+        int col = columns[i];
+        if (validSpot(state, col)) {
+            GameState nextState = simulateMove(state, col);
+            int score = minimax(nextState, max_depth-1, inf_neg, inf_pos, false);
 
-        if (state.gridSize() == 3){
-            limit = 6;
-        }
-        else{
-            if (moves.size() < 15){
-                limit = 5;
-            }
-        }
-        if (depth < limit){
-            for (int i = 0; i < moves.size(); i++){
-                GameState currentState = node->data;
-                currentState.play(moves[i].x, moves[i].y);
-                Vertex<GameState>* child = new Vertex<GameState>(currentState);
-                gameSpace.addVertex(child);
-                gameSpace.addDirectedEdge(node, child, 1);
-                frontier.enqueue(GameTreeNode(child, depth + 1));
+            if (score > goalScore) {
+                goalScore = score;
+                bestCol = col;
             }
         }
     }
 
-    int reward = getReward(root->neighbors[0]->location, 1);
-    int pos = 0;
-    for (int i = 1; i < root->neighbors.size(); i++){
-        int curr = getReward(root->neighbors[i]->location, 1);
-        if (curr > reward){
-            reward = curr;
-            pos = i;
-        }
-        else if (curr == reward && root->neighbors[i]->location->data.hasWon(1)){
-            reward = curr;
-            pos = i;
+    for (int row = gridSize-1; row >= 0; row--){
+        if (state.squareState(bestCol, row) == ""){
+            return Vec(bestCol,row);
         }
     }
-
-    return root->neighbors[pos]->location->data.getLastMove();
 }
