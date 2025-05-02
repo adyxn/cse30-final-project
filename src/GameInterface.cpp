@@ -17,18 +17,21 @@ GameInterface::GameInterface(int x, int y, int w, int h, GameState initialState)
     state = initialState;
 
 
-    for (int i = 0; i < 7; i++){
-        int x_coord = x + i*50;
-        int y_coord = 100;
+   for (int i = 0; i < 6; i++) {
+    ArrayList<Button*> row;
+    for (int j = 0; j < 7; j++) {
+        int x_coord = x + j * 50;
+        int y_coord = y + i * 50;
         Button* temp = new Button(x_coord, y_coord, 40, 40, "");
         temp->box(FL_ROUND_UP_BOX);
-
         ON_CLICK(temp, GameInterface::handleClick);
-
-        buttons.append(temp);
+        row.append(temp);
     }
+    buttons.append(row);
+}
 
-    updateButtons();
+
+   // updateButtons();
 
 
     string message = "Player vs Player";
@@ -42,51 +45,53 @@ GameInterface::GameInterface(int x, int y, int w, int h, GameState initialState)
 }
 
 void GameInterface::handleClick(Widget *sender){
-    for (int i = 0; i < buttons.size(); i++){
-        if (sender == buttons[i]){
-            // cout << "Button " << i << " was clicked" << endl;
-            state.play(i);
+    for (int i = 0; i < buttons.size(); i++) {
+    for (int j = 0; j < buttons[i].size(); j++) {
+        if (sender == buttons[i][j]) {
+            int flatIndex = i * buttons[i].size() + j; // If GameState needs a 1D index
+            state.play(flatIndex);
             updateButtons();
-            // check winning conditions
             return;
         }
     }
 }
+}
 
 void GameInterface::updateButtons(){
-    for (int i = 0; i < buttons.size(); i++){
-        if (state.buttonState(i) == 0){
-            // Make it red
-            cout << "Button " << i << " red" << endl;
-            buttons[i]->color(fl_rgb_color(255, 0, 0));
-            buttons[i]->color2(fl_rgb_color(255, 0, 0));
+    for (int i = 0; i < buttons.size(); i++) {
+    for (int j = 0; j < buttons[i].size(); j++) {
+        int flatIndex = i * buttons[i].size() + j;
+        int stateVal = state.buttonState(flatIndex); // still assuming state is 1D
+
+        if (stateVal == 0){
+            buttons[i][j]->color(fl_rgb_color(255, 0, 0));
+            buttons[i][j]->color2(fl_rgb_color(255, 0, 0));
+        } else if (stateVal == 1){
+            buttons[i][j]->color(fl_rgb_color(0, 0, 255));
+            buttons[i][j]->color2(fl_rgb_color(0, 0, 255));
+        } else {
+            buttons[i][j]->color(49);
+            buttons[i][j]->color2(49);
         }
-        else if (state.buttonState(i) == 1){
-            // Make it blue
-            cout << "Button " << i << " blue" << endl;
-            buttons[i]->color(fl_rgb_color(0, 0, 255));
-            buttons[i]->color2(fl_rgb_color(0, 0, 255));
-        }
-        else{
-            // Make it gray
-            cout << "Button " << i << " gray" << endl;
-            buttons[i]->color(49);
-            buttons[i]->color2(49);
-        }
-        buttons[i]->redraw();
+        buttons[i][j]->redraw();
     }
+}
 }
 
 
 void GameInterface::hideButtons(){
-    for (int i = 0; i < 7; i++){
-        buttons[i]->hide();
+   for (int i = 0; i < buttons.size(); i++) {
+        for (int j = 0; j < buttons[i].size(); j++) {
+            buttons[i][j]->hide();
+        }
     }
 }
 
 void GameInterface::showButtons(){
-    for (int i = 0; i < 7; i++){
-        buttons[i]->show();
+    for (int i = 0; i < buttons.size(); i++) {
+        for (int j = 0; j < buttons[i].size(); j++) {
+            buttons[i][j]->show();
+        }
     }
 }
 

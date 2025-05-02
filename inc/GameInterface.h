@@ -17,7 +17,7 @@ class GameInterface{
 
     GameState state;
 
-    ArrayList<bobcat::Button*> buttons;
+    ArrayList<ArrayList<bobcat::Button*>> buttons;
 
     bobcat::TextBox *statusBar;
 
