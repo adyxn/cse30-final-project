@@ -32,6 +32,17 @@ SettingsInterface::SettingsInterface(int x, int y, int w, int h, GameState state
     else {
         enableAISelector->value(1);
     }
+
+    int currentSize = state.getSize();
+    if (currentSize == 3) {
+        gridSizeSelector->value(0);
+    }
+    else if (currentSize == 4) {
+        gridSizeSelector->value(1);
+    }
+    else if (currentSize == 5) {
+        gridSizeSelector->value(2);
+    }
 }
 
 void SettingsInterface::applyUpdates(){
@@ -54,10 +65,12 @@ void SettingsInterface::applyUpdates(){
     else if (enableAISelector->value() == 1){
         shouldEnableAI = false;
     }
-    
-    if (newSize != state.gridSize()){
-        state = GameState(newSize);
-    }
+
+    // needs a constructor in gamestate.cpp that allows to change the board size in gameinterface.cpp
+
+    // if (newSize != state.gridSize()){
+    //     state = GameState(newSize);
+    // }
 
     if (shouldEnableAI){
         state.enableAI();
