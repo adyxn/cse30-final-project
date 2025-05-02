@@ -1,15 +1,15 @@
 #ifndef GAME_INTERFACE_H
 #define GAME_INTERFACE_H
 
+#include "ArrayList.h"
 #include <bobcat_ui/bobcat_ui.h>
 #include <bobcat_ui/button.h>
 #include <bobcat_ui/textbox.h>
 
-#include <ArrayList.h>
 #include <GameState.h>
-#include <string>
 
-class GameInterface {
+
+class GameInterface{
     int x;
     int y;
     int w;
@@ -17,30 +17,27 @@ class GameInterface {
 
     GameState state;
 
+    ArrayList<bobcat::Button*> buttons;
+
     bobcat::TextBox *statusBar;
 
-    // Top buttons for dropping discs
-    ArrayList<bobcat::Button*> columnButtons;
+    void updateButtons();
+    void hideButtons();
+    void showButtons();
 
-    // 2D grid for displaying placed discs
-    ArrayList<ArrayList<bobcat::Button*>> boardGrid;
-
-    void initButtons();                      // Set up column + grid buttons
-    void handleClick(bobcat::Widget *sender); // Handle drop button clicks
-    void updateButtons();                    // Refresh grid visuals
-    void showButtons();                      // Show all buttons
-    void hideButtons();                      // Hide all buttons
-    bool checkWinningConditions();           // Show win/tie messages
+    void handleClick(bobcat::Widget *sender);
 
 public:
+
     GameInterface(int x, int y, int w, int h, GameState initialState);
 
-    void reset();                            // Reset game state and UI
-    void hide();                             // Hide full interface
-    void show();                             // Show full interface
+    void reset();
+    void hide();
+    void show();
 
     GameState getState() const;
     void setState(GameState state);
+
 };
 
 #endif

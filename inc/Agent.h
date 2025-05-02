@@ -9,7 +9,7 @@
 class Agent {
     static int getReward(Vertex<GameState>* start, int player);
 public:
-    static Vec play(GameState state);
+    static int play(GameState state);
 };
 
 #endif
