@@ -23,13 +23,11 @@ int GameState::buttonState(int x) const{
 }
 
 
-bool GameState::play(int x){
-    cout << "Current player makes move " << x << endl;
-    cout << "Must update state, including whose turn it is" << endl; 
-    cout << "and the last move, among other things." << endl;
-    // Return true if the move was valid, otherwise false
+bool GameState::play(int x) {
+    std::cout << "Current player makes move " << x << std::endl;
 
-    if (x >= 7 || board[x] != -1){
+    if (x < 0 || x >= board.size() || board[x] != -1) {
+        std::cout << "Invalid move: out of bounds or occupied." << std::endl;
         return false;
     }
 
