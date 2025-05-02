@@ -18,6 +18,7 @@ bool GameState::hasWon(int player) const{
 }
 
 int GameState::buttonState(int x) const{
+    if (x < 0 || x >= board.size()) return -1;
     return board[x];
 }
 
