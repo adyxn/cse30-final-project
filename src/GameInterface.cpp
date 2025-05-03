@@ -17,7 +17,7 @@ GameInterface::GameInterface(int x, int y, int w, int h, GameState initialState)
     state = initialState;
 
 
-   for (int i = 0; i < 5; i++) {
+   for (int i = 0; i < 4; i++) {
     ArrayList<Button*> row;
     for (int j = 0; j < 7; j++) {
         int x_coord = x + j * 50;
@@ -47,19 +47,25 @@ GameInterface::GameInterface(int x, int y, int w, int h, GameState initialState)
 }
 
 void GameInterface::handleClick(Widget *sender){
-    for (int row = 0; row < buttons.size(); row++) {
-        for (int col = 0; col < buttons[row].size(); col++) {
+    int rowCount = buttons.size();               // Number of rows
+    if (rowCount == 0) return;
+    int colCount = buttons[0].size();            // Number of columns
+    
+    for (int row = 0; row < rowCount; row++) {
+        for (int col = 0; col < colCount; col++) {
             if (sender == buttons[row][col]) {
-                // Step 1: Find the column that was clicked
                 int clickedCol = col;
-                for (int dropRow = buttons.size() - 1; dropRow >= 0; dropRow--) {
-                    int flatIndex = dropRow * buttons[dropRow].size() + clickedCol;
-                    if (state.buttonState(flatIndex) == -1) { // Assuming -1 means empty
+
+                // Scan from bottom row upwards to find the first empty cell in the column
+                for (int dropRow = rowCount - 1; dropRow >= 0; dropRow--) {
+                    int flatIndex = dropRow * colCount + clickedCol;
+                    if (state.buttonState(flatIndex) == -1) { // Empty slot
                         state.play(flatIndex);
                         updateButtons();
                         return;
                     }
                 }
+
                 return;
             }
         }
@@ -67,24 +73,30 @@ void GameInterface::handleClick(Widget *sender){
 }
 
 void GameInterface::updateButtons(){
-    for (int i = 0; i < buttons.size(); i++) {
-    for (int j = 0; j < buttons[i].size(); j++) {
-        int flatIndex = i * buttons[i].size() + j;
-        int stateVal = state.buttonState(flatIndex); // still assuming state is 1D
+  int rowCount = buttons.size();
+    if (rowCount == 0) return;
 
-        if (stateVal == 0){
-            buttons[i][j]->color(fl_rgb_color(255, 0, 0));
-            buttons[i][j]->color2(fl_rgb_color(255, 0, 0));
-        } else if (stateVal == 1){
-            buttons[i][j]->color(fl_rgb_color(0, 0, 255));
-            buttons[i][j]->color2(fl_rgb_color(0, 0, 255));
-        } else {
-            buttons[i][j]->color(49);
-            buttons[i][j]->color2(49);
+    int colCount = buttons[0].size();
+
+    for (int row = 0; row < rowCount; row++) {
+        for (int col = 0; col < colCount; col++) {
+            int flatIndex = row * colCount + col;
+            int stateVal = state.buttonState(flatIndex);
+
+            if (stateVal == 0) {
+                buttons[row][col]->color(fl_rgb_color(255, 0, 0));
+                buttons[row][col]->color2(fl_rgb_color(255, 0, 0));
+            } else if (stateVal == 1) {
+                buttons[row][col]->color(fl_rgb_color(0, 0, 255));
+                buttons[row][col]->color2(fl_rgb_color(0, 0, 255));
+            } else {
+                buttons[row][col]->color(49); // default background
+                buttons[row][col]->color2(49);
+            }
+
+            buttons[row][col]->redraw();
         }
-        buttons[i][j]->redraw();
     }
-}
 }
 
 

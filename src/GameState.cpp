@@ -4,7 +4,7 @@ using namespace std;
 GameState::GameState(){
     cout << "Initializing to the default state" << endl;
 
-    for (int i = 0; i < 6 * 7; i++){
+    for (int i = 0; i < 8 * 7; i++){
         board.append(-1);
     }
 
