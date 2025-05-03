@@ -62,12 +62,7 @@ int GameState::getLastMove() const {
 
 
 void GameState::reset(){
-    cout << "Reseting the game state" << endl;
-    for (int i = 0; i < 7; i++){
-        board[i] = -1;
-    }
-
-    currentTurn = 0;
+    
 }
 
 void GameState::enableAI(){
