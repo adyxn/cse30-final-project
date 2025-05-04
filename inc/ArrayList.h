@@ -119,7 +119,6 @@ public:
         inflate();
     }
 
-
     bool search (T value) const {
         for (int i = 0; i < count; i++){
             if (value == arr[i]){
@@ -171,6 +170,11 @@ public:
 
     int size() const {
         return count;
+    }
+
+    // created clear function
+    void clear() {
+        count = 0;
     }
 
     ~ArrayList(){

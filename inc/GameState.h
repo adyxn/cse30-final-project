@@ -10,19 +10,26 @@ class GameState{
     // Representation of the board
     // Whose turn it is
     // Whether AI is enabled
-
-    ArrayList<int> board;
     // -1 unoccupied
     // 0 player 0
     // 1 player 1
-
+    ArrayList<int> board;
     bool currentTurn;
+    int rows;
+    int cols;
+    int lastMove;
+    bool aiEnabled;
 
 public:
     // Initialize default game state
     GameState();                    // May take in parameters if necessary
 
+    GameState(int rows, int cols);
+
     int getSize() const;            // What is the size of the game
+    int getRows() const;
+    int getCols() const;
+    void resize(int tempRow, int tempCol);
 
     int getCurrentTurn() const;     // Whose turn is it?
 

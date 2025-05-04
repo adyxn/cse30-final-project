@@ -10,33 +10,35 @@
 
 
 class GameInterface{
-    int x;
-    int y;
-    int w;
-    int h;
+    private:
+        int x;
+        int y;
+        int w;
+        int h;
 
-    GameState state;
+        GameState state;
 
-    ArrayList<ArrayList<bobcat::Button*>> buttons;
+        ArrayList<ArrayList<bobcat::Button*>> buttons;
 
-    bobcat::TextBox *statusBar;
+        bobcat::TextBox *statusBar;
 
-    void updateButtons();
-    void hideButtons();
-    void showButtons();
+        void makeButtonGrid(int rows, int cols);
+        void updateButtons();
+        void hideButtons();
+        void showButtons();
 
-    void handleClick(bobcat::Widget *sender);
+    public:
 
-public:
+        GameInterface(int x, int y, int w, int h, GameState initialState);
 
-    GameInterface(int x, int y, int w, int h, GameState initialState);
+        void handleClick(bobcat::Widget *sender);
 
-    void reset();
-    void hide();
-    void show();
+        void reset();
+        void hide();
+        void show();
 
-    GameState getState() const;
-    void setState(GameState state);
+        const GameState& getState() const;
+        void setState(GameState state);
 
 };
 

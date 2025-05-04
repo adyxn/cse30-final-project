@@ -6,6 +6,10 @@
 
 #include "GameState.h"
 
+struct BoardDimensions {
+    int rows;
+    int cols;
+};
 
 class SettingsInterface {
     bobcat::TextBox *pageHeading;
@@ -23,6 +27,8 @@ class SettingsInterface {
 
 public:
     SettingsInterface(int x, int y, int w, int h, GameState state);
+
+    BoardDimensions getBoardDimensions() const;
 
     void applyUpdates();
     void hide();
