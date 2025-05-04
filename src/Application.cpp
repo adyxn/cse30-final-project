@@ -1,5 +1,5 @@
+// Application.cpp
 #include "Application.h"
-#include "SettingsInterface.h"
 #include <bobcat_ui/bobcat_ui.h>
 #include <bobcat_ui/button.h>
 #include <cstdlib>
@@ -10,68 +10,78 @@ using namespace std;
 Application::Application(){
     window = new Window(100, 100, 400, 400, "Connect 4");
 
+    // Initialize default state (you had a no-arg ctor)
     state = GameState();
-    state.enableAI();
+    state.enableAI();  // your default
 
-    gameInterface = new GameInterface(30, 35, 340, 340, state);
-    settingsInterface = new SettingsInterface(30, 40, 340, 340, state);
+    // Create the game UI and settings UI, both seeded with the same state
+    gameInterface     = new GameInterface(30,  35, 340, 340, state);
+    settingsInterface = new SettingsInterface(30,  40, 340, 340, state);
 
-    cancelButton = new Button(30, 360, 155, 25, "Cancel");
-    applyButton = new Button(215, 360, 155, 25, "Apply");
+    // Create Cancel / Apply buttons (hidden until "Settings")
+    cancelButton = new Button(30,  360, 155, 25, "Cancel");
+    applyButton  = new Button(215, 360, 155, 25, "Apply");
 
     settingsInterface->hide();
     cancelButton->hide();
     applyButton->hide();
 
-    menu = new Menu();
+    // Build the File menu
+    menu    = new Menu();
     newGame = new MenuItem("File/New Game");
-    settings = new MenuItem("File/Settings");
-    quit = new MenuItem("File/Exit");
+    settings= new MenuItem("File/Settings");
+    quit    = new MenuItem("File/Exit");
+
     menu->addItem(newGame);
     menu->addItem(settings);
     menu->addItemSep(quit);
 
-    ON_CLICK(newGame, Application::handleNewGameMenuClick);
-    ON_CLICK(settings, Application::handleSettingsMenuClick);
-    ON_CLICK(quit, Application::handleQuitMenuClick);
-    ON_CLICK(cancelButton, Application::handleCancelBtnClick);
+    // Wire up all callbacks
+    ON_CLICK(newGame,     Application::handleNewGameMenuClick);
+    ON_CLICK(settings,    Application::handleSettingsMenuClick);
+    ON_CLICK(quit,        Application::handleQuitMenuClick);
+    ON_CLICK(cancelButton,Application::handleCancelBtnClick);
     ON_CLICK(applyButton, Application::handleApplyBtnClick);
 
     window->show();
 }
 
-void Application::handleNewGameMenuClick(Widget *sender){
+void Application::handleNewGameMenuClick(Widget *){
+    // Just reset the existing game interface
     gameInterface->reset();
 }
 
-void Application::handleSettingsMenuClick(Widget *sender){
+void Application::handleSettingsMenuClick(Widget *){
+    // Hide game, show settings + buttons
     gameInterface->hide();
     settingsInterface->show();
     applyButton->show();
     cancelButton->show();
 }
 
-void Application::handleCancelBtnClick(Widget *sender){
+void Application::handleCancelBtnClick(Widget *){
+    // Discard changes & go back
     settingsInterface->hide();
     applyButton->hide();
     cancelButton->hide();
     gameInterface->show();
 }
 
-void Application::handleApplyBtnClick(Widget* sender){
+void Application::handleApplyBtnClick(Widget*){
+    // Tell settingsInterface to update its internal GameState
     settingsInterface->applyUpdates();
 
+    // Pull the new state out and apply to gameInterface
     state = settingsInterface->getState();
-
     gameInterface->setState(state);
 
+    // Hide settings and return to the game
     settingsInterface->hide();
     applyButton->hide();
     cancelButton->hide();
-
     gameInterface->show();
 }
 
-void Application::handleQuitMenuClick(Widget *sender){
+void Application::handleQuitMenuClick(Widget *){
     exit(0);
 }

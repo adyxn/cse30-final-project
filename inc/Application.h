@@ -1,3 +1,4 @@
+// Application.h
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
@@ -12,7 +13,7 @@
 #include "GameInterface.h"
 #include "SettingsInterface.h"
 
-class Application: public bobcat::Application_ {
+class Application : public bobcat::Application_ {
     bobcat::Window *window;
     
     bobcat::Menu *menu;

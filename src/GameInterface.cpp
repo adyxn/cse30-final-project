@@ -253,12 +253,16 @@ void GameInterface::setState(GameState state){
         for (int i=0; i<buttons.size(); i++) {
 
             for (int j = 0; j<buttons[i].size(); j++) {
-
-                delete buttons[i][j];
+                if (buttons[i][j] != nullptr) {
+                    buttons[i][j]->hide();
+                    delete buttons[i][j];
+                    buttons[i][j] = nullptr;
+                }
 
             }
 
         }
+        buttons.clear();
 
         makeButtonGrid(rows, cols);
 
