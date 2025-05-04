@@ -4,7 +4,7 @@ using namespace std;
 GameState::GameState(){
     cout << "Initializing to the default state" << endl;
 
-    for (int i = 0; i < 8 * 7; i++){
+    for (int i = 0; i < 10 * 7; i++){
         board.append(-1);
     }
 
@@ -62,7 +62,16 @@ int GameState::getLastMove() const {
 
 
 void GameState::reset(){
-    
+currentTurn = 0;
+
+    for (int i = 0; i < board.size(); i++) {
+        board[i] = -1;
+    }
+    for (int i = board.size(); i < 10 * 7; i++) {
+        board.append(-1);
+    }
+
+    std::cout << "Board has been reset." << std::endl;  
 }
 
 void GameState::enableAI(){

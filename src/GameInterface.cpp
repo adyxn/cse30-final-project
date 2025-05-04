@@ -17,7 +17,7 @@ GameInterface::GameInterface(int x, int y, int w, int h, GameState initialState)
     state = initialState;
 
 
-   for (int i = 0; i < 4; i++) {
+   for (int i = 0; i < 9; i++) {
     ArrayList<Button*> row;
     for (int j = 0; j < 7; j++) {
         int x_coord = x + j * 50;
