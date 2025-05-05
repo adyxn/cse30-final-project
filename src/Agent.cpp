@@ -106,7 +106,7 @@ int evaluate (const GameState& state){
                 if (cellValue == AI_Agent) {
                     aiCount++;
                 }
-                if (cellValue == Human) {
+                else if (cellValue == Human) {
                     humanCount++;
                 }
                 else {
@@ -151,7 +151,7 @@ int evaluate (const GameState& state){
                 if (cellValue == AI_Agent) {
                     aiCount++;
                 }
-                if (cellValue == Human) {
+                else if (cellValue == Human) {
                     humanCount++;
                 }
                 else {
@@ -192,11 +192,11 @@ int evaluate (const GameState& state){
             int emptyCount = 0;
 
             for (int i=0; i <4; i++) {
-                int cellValue = state.buttonState((row+i)*cols + col);
+                int cellValue = state.buttonState((row+i)*cols + col + i);
                 if (cellValue == AI_Agent) {
                     aiCount++;
                 }
-                if (cellValue == Human) {
+                else if (cellValue == Human) {
                     humanCount++;
                 }
                 else {
@@ -230,7 +230,7 @@ int evaluate (const GameState& state){
     }
 
     // scores for diag 2
-    for (int row = 3; row <= rows-4; row++) {
+    for (int row = 3; row <= rows; row++) {
         for (int col = 0; col <= cols-4 ; col++) {
             int aiCount = 0; 
             int humanCount = 0;
@@ -241,7 +241,7 @@ int evaluate (const GameState& state){
                 if (cellValue == AI_Agent) {
                     aiCount++;
                 }
-                if (cellValue == Human) {
+                else if (cellValue == Human) {
                     humanCount++;
                 }
                 else {
@@ -335,6 +335,66 @@ int Agent::play(GameState state){
     int cols = getCols(state);
     int goalScore = inf_neg;
     int bestCol = -1;
+
+    // winning move check
+    for (int col = 0; col < cols; col++) {
+        if (findValidCols(state, col)) {
+            GameState newState = simulateMove(state, col);
+            if (newState.hasWon(AI_Agent)) {
+                return col;
+            }
+        }
+    }
+
+    // losing move check
+    for (int col = 0; col < cols; col++) {
+        if (findValidCols(state, col)) {
+            int row = -1;
+            for (int r = getRows(state) -1; r>= 0; r--) {
+                int flatIndex = r*col + col;
+                if (state.buttonState(flatIndex) == emptyCell) {
+                    row = r;
+                    break;
+                }
+            }
+            
+            if (row != -1) {
+                GameState tempState = state;
+                int currentTurn = tempState.getCurrentTurn();
+
+                if (currentTurn != Human) {
+                    int testRow = -1;
+                    int testCol = -1;
+                    for (int x = 0; x < getRows(tempState); x++) {
+                        for (int y = 0; y < getCols(tempState); y++) {
+                            if (tempState.buttonState(x*cols + y) != emptyCell) {
+                                testRow = x;
+                                testCol = y;
+                                break;
+                            }
+                        }
+                        if (testRow != -1) {
+                            break;
+                        }
+                        if (testRow == -1) {
+                            GameState testState = state;
+                            int flatIndex = row*cols + col;
+                            testState.play(flatIndex);
+                            if (testState.hasWon(Human)) {
+                                return col;
+                            }
+                            continue;
+                        }
+                    }
+                    int flatIndex = row*cols + col;
+                    tempState.play(flatIndex);
+                    if (tempState.hasWon(Human)) {
+                        return col;
+                    }
+                }
+            }
+        }
+    }
 
     for (int col = 0; col < cols; col++) {
         if (findValidCols(state, col)) {
