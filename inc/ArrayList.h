@@ -103,10 +103,9 @@ public:
     }
 
     void append(T value){
+        inflate();
         arr[count] = value;
         count++;
-
-        inflate();
     }
 
     void prepend(T value){

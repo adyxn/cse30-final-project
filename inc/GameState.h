@@ -18,6 +18,7 @@ class GameState{
     int rows;
     int cols;
     int lastMove;
+    bool done;
     bool aiEnabled;
 
 public:

@@ -128,30 +128,22 @@ BoardDimensions SettingsInterface::getBoardDimensions() const {
 
 }
 
-void SettingsInterface::applyUpdates(){
-
+GameState SettingsInterface::applyUpdates(){
     BoardDimensions dims = getBoardDimensions();
-
     bool shouldEnableAI = (enableAISelector->value() == 0);
-
     if (shouldEnableAI == true){
-
         state.enableAI();
-
     }
-
     else {
-
         state.disableAI();
-
     }
 
-    if (dims.rows != state.getRows() || dims.cols != state.getCols()){
-
+    bool dimsChanged = (dims.rows != state.getRows() || dims.cols != state.getCols());
+    if (dimsChanged == 1){
         state.resize(dims.rows, dims.cols);
-
     }
 
+    return state;
 }
 
 void SettingsInterface::hide(){

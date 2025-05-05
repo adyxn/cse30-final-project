@@ -31,6 +31,8 @@ class GameInterface{
 
         GameInterface(int x, int y, int w, int h, GameState initialState);
 
+
+        void makeAImove();
         void handleClick(bobcat::Widget *sender);
 
         void reset();

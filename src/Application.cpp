@@ -1,5 +1,7 @@
 // Application.cpp
 #include "Application.h"
+#include "GameInterface.h"
+#include "GameState.h"
 #include <bobcat_ui/bobcat_ui.h>
 #include <bobcat_ui/button.h>
 #include <cstdlib>
@@ -46,20 +48,21 @@ Application::Application(){
     window->show();
 }
 
-void Application::handleNewGameMenuClick(Widget *){
+void Application::handleNewGameMenuClick(Widget* sender){
     // Just reset the existing game interface
     gameInterface->reset();
 }
 
-void Application::handleSettingsMenuClick(Widget *){
+void Application::handleSettingsMenuClick(Widget* sender){
     // Hide game, show settings + buttons
+    settingsInterface->setState(gameInterface->getState());
     gameInterface->hide();
     settingsInterface->show();
     applyButton->show();
     cancelButton->show();
 }
 
-void Application::handleCancelBtnClick(Widget *){
+void Application::handleCancelBtnClick(Widget* sender){
     // Discard changes & go back
     settingsInterface->hide();
     applyButton->hide();
@@ -67,7 +70,7 @@ void Application::handleCancelBtnClick(Widget *){
     gameInterface->show();
 }
 
-void Application::handleApplyBtnClick(Widget*){
+void Application::handleApplyBtnClick(Widget* sender){
     // Tell settingsInterface to update its internal GameState
     settingsInterface->applyUpdates();
 

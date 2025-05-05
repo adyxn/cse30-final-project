@@ -21,15 +21,21 @@ GameState::GameState(int rows, int cols){
     currentTurn = 0;
 
     aiEnabled = false;
+    done = false;
 
     lastMove = -1;
 
 }
 
-GameState::GameState():GameState(5,5) {
+GameState::GameState(){
+    rows = 0;
+    cols = 0;
+    currentTurn = 0;
+    aiEnabled = false;
+    done = false;
+    lastMove = -1;
 
-    cout << "making 5x5 board" << endl;
-
+    resize (5,5);
 }
 
 bool GameState::hasWon(int player) const{
@@ -40,7 +46,7 @@ bool GameState::hasWon(int player) const{
 
     for (int row = 0; row < rows; row++) {
 
-        for (int col = 0; col <= cols; col++) {
+        for (int col = 0; col <= cols -4; col++) {
 
             bool win  = true;
 
@@ -70,7 +76,7 @@ bool GameState::hasWon(int player) const{
 
     for (int col = 0; col < cols;  col++) {
 
-        for (int row = 0;  row<= rows; row++) {
+        for (int row = 0;  row<= rows - 4 ; row++) {
 
             bool win = true;
 
@@ -86,8 +92,6 @@ bool GameState::hasWon(int player) const{
 
             }
 
-            
-
             if (win == true){
 
                 return true;
@@ -102,7 +106,7 @@ bool GameState::hasWon(int player) const{
 
     for (int row = 0; row<=rows-4; row++){
 
-        for (int col = 0; col <= cols; col++) {
+        for (int col = 0; col <= cols-4; col++) {
 
             bool win = true;
 
@@ -185,7 +189,7 @@ bool GameState::play(int x) {
     }
 
     board[x] = currentTurn;
-
+    lastMove = x;
     currentTurn = !currentTurn;
 
     return true;
@@ -203,13 +207,11 @@ int GameState::getSize() const {
 }
 
 int GameState::getRows() const {
-
     return rows;
 
 }
 
 int GameState::getCols() const {
-
     return cols;
 
 }
@@ -217,21 +219,16 @@ int GameState::getCols() const {
 // resize board function
 
 void GameState::resize (int tempRow, int tempCol) {
-
     rows = tempRow;
-
     cols = tempCol;
 
     board.clear();
 
     for (int i= 0; i < rows * cols; i++) {
-
         board.append(-1);
-
     }
 
     currentTurn = 0;
-
     lastMove = -1;
 
 }
@@ -244,19 +241,10 @@ int GameState::getCurrentTurn() const {
 
 }
 
+// game over due to draw
 bool GameState::gameOver() const {
 
     cout << "Checking if the game is over" << endl;
-
-    // game over due to win
-
-    if (hasWon(0) || hasWon(1)){
-
-        return true;
-
-    }
-
-    // game over due to full board with no win
 
     for (int i=0; i< board.size(); i++){
 
@@ -273,47 +261,34 @@ bool GameState::gameOver() const {
 }
 
 int GameState::getLastMove() const {
-
-    cout << "Getting the last move that was made" << endl;
-
-    cout << "Should have been updated during play()" << endl;
-
     return lastMove;
 
 }
 
 void GameState::reset(){
     currentTurn = 0;
-    for (int i = 0; i < board.size(); i++) {
-        board[i] = -1;
-    }
-    for (int i = board.size(); i < 10 * 7; i++) {
+    board.clear();
+
+    for (int i = 0; i < rows*cols; i++) {
         board.append(-1);
     }
+
+    lastMove = -1;
  
     std::cout << "Board has been reset." << std::endl;  
 }
 
 void GameState::enableAI(){
-
-    cout << "Turning on the AI" << endl;
-
     aiEnabled = true;
 
 }
 
 void GameState::disableAI(){
-
-    cout << "Turning off the AI" << endl;
-
     aiEnabled = false;
 
 }
 
 bool GameState::getEnabledAI() const {
-
-    cout << "Is the AI turned on" << endl;
-
     return aiEnabled;
 
 }

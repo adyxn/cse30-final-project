@@ -50,14 +50,13 @@ GameInterface::GameInterface(int x, int y, int w, int h, GameState initialState)
 
 void GameInterface::makeButtonGrid(int rows, int cols) {
 
+    // debug line
+    std::cout << "Drawing board size: " << state.getRows() << " x " << state.getCols() << std::endl;
+
     for (int i=0; i <buttons.size(); i++){
-
         for (int j = 0; j<buttons[i].size(); j++) {
-
             delete buttons[i][j];
-
         }
-
     }
 
     buttons.clear();
@@ -65,32 +64,76 @@ void GameInterface::makeButtonGrid(int rows, int cols) {
     int buttonSize = min((w-20) / cols, (h-50)/rows);
 
     for (int i = 0; i < rows; i++) {
+        ArrayList<Button*> row;
 
-    ArrayList<Button*> row;
+        for (int j = 0; j < cols; j++) {
+            int x_coord = x + j * (buttonSize + 5);
+            int y_coord = y + i * (buttonSize + 5);
+            Button* temp = new Button(x_coord, y_coord, buttonSize, buttonSize, "");
+            temp->box(FL_ROUND_UP_BOX);
+            temp->color(49);
+            temp->color2(49);
 
-    for (int j = 0; j < cols; j++) {
+            ON_CLICK(temp, GameInterface::handleClick);
+            row.append(temp);
+        }
 
-        int x_coord = x + j * (buttonSize + 10);
-
-        int y_coord = y + i * (buttonSize + 10);
-
-        Button* temp = new Button(x_coord, y_coord, 40, 40, "");
-
-        temp->box(FL_ROUND_UP_BOX);
-
-        ON_CLICK(temp, GameInterface::handleClick);
-
-        row.append(temp);
-
+        buttons.append(row);
     }
 
-    buttons.append(row);
-
+    for (int i=0; i<buttons.size(); i++) {
+        for (int j=0; j<buttons.size(); j++) {
+            buttons[i][j]->show();
+        }
     }
 
+    Fl::redraw(); 
+}
+
+void GameInterface::makeAImove() {
+    if (!state.getEnabledAI()) {
+        return;
+    }
+
+    Agent agent;
+    int aiMove = agent.play(state);
+
+    if (aiMove >= 0) {
+        int rows = state.getRows();
+        int cols = state.getCols();
+
+        for (int dropRow = rows - 1; dropRow >= 0; dropRow--){
+            int flatIndex = dropRow * cols + aiMove;
+            if (state.buttonState(flatIndex) == -1) {
+                state.play(flatIndex);
+                updateButtons();
+
+                if (state.hasWon(1)) {
+                    statusBar->label("AI wins");
+                    // disable all buttons function
+                }
+                else if (state.gameOver()) {
+                    statusBar->label("Draw");
+                    // disable all buttons function
+                }
+                break;
+            }
+        }
+    }
 }
 
 void GameInterface::handleClick(Widget *sender){
+    if (state.gameOver()) {
+        return;
+    }
+    if (state.hasWon(0)) {
+        statusBar->label("Red Wins");
+        return;
+    }
+    if (state.hasWon(1)) {
+        statusBar->label("Blue Wins");
+        return;
+    }
 
     for (int row = 0; row < buttons.size(); row++) {
 
@@ -101,27 +144,50 @@ void GameInterface::handleClick(Widget *sender){
                 // Step 1: Find the column that was clicked
 
                 int clickedCol = col;
-
                 int rows = state.getRows();
-
                 int cols = state.getCols();
 
-                for (int dropRow = rows - 1; dropRow >= 0; dropRow--) {
-
-                    int flatIndex = dropRow * cols + clickedCol;
-
-                    if (state.buttonState(flatIndex) == -1) { // Assuming -1 means empty
-
-                        state.play(flatIndex);
-
-                        updateButtons();
-
-                        return;
-
-                    }
-
+                // check if it is ai's turn
+                if (state.getEnabledAI() && state.getCurrentTurn() != 0){
+                    return;
                 }
 
+                for (int dropRow = rows - 1; dropRow >= 0; dropRow--) {
+                    int flatIndex = dropRow *cols + clickedCol;
+                    if (state.buttonState(flatIndex) == -1) { // Assuming -1 means empty
+                        int currentPlayer = state.getCurrentTurn();
+
+                        // debug line
+                        std::cout << "before move, current player is " << currentPlayer << std::endl;
+
+                        if (state.play(flatIndex)){
+                            updateButtons();
+                        }
+
+                        int prevPlayer = !currentPlayer;
+
+                        // debug line
+                        std::cout << "after move, previous player is " << prevPlayer << std::endl;
+                        bool player0Win = state.hasWon(0);
+                        bool player1Win = state.hasWon(1);
+                        bool gameOver = state.gameOver();
+                        std::cout << "Player 0 win: " << player0Win << std::endl;
+                        std::cout << "Player 1 win: " << player1Win << std::endl;
+                        std::cout << "GameOver: " << gameOver << std::endl;
+
+
+                        if (state.hasWon(prevPlayer)) {
+                            std::string winMessage = (prevPlayer == 0) ? "Red Wins" : "Blue Wins";
+                            statusBar->label(winMessage.c_str());
+
+                        } else if (state.gameOver() && !state.hasWon(prevPlayer)) {
+                            statusBar->label("Draw");
+                        } else if (state.getEnabledAI() && state.getCurrentTurn() == 1) {
+                            makeAImove();
+                        }
+                        return;
+                    }
+                }
                 return;
 
             }
@@ -231,41 +297,30 @@ const GameState& GameInterface::getState() const{
 }
 
 void GameInterface::setState(GameState state){
-
     this->state = state;
 
     // update any made changes to state
 
     int rows = state.getRows();
-
     int cols = state.getCols();
 
     bool dimChanged = (buttons.size() != rows);
 
     if (!dimChanged && buttons.size() > 0) {
-
         dimChanged = (buttons[0].size() != cols);
-
     }
 
+    // debug line
+    std::cout << "Board Size changed: " << (dimChanged ? "yes" : "no") << std::endl;
+    std::cout << "Rows: " << state.getRows() << std::endl;
+    std::cout << "Cols: " << state.getCols() << std::endl;
+
     if (dimChanged == true) {
-
-        for (int i=0; i<buttons.size(); i++) {
-
-            for (int j = 0; j<buttons[i].size(); j++) {
-                if (buttons[i][j] != nullptr) {
-                    buttons[i][j]->hide();
-                    delete buttons[i][j];
-                    buttons[i][j] = nullptr;
-                }
-
-            }
-
-        }
-        buttons.clear();
-
         makeButtonGrid(rows, cols);
 
+        if (statusBar->visible()){
+            showButtons();
+        }
     }
 
     updateButtons();
@@ -279,6 +334,14 @@ void GameInterface::setState(GameState state){
     }
 
     statusBar->label(message);
+
+    // redraw board
+    statusBar->redraw();
+    
+    // debug line
+    std::cout << "Post-redraw Board Size changed: " << (dimChanged ? "yes" : "no") << std::endl;
+    std::cout << "Rows: " << rows << std::endl;
+    std::cout << "Cols: " << cols << std::endl;
 
 }
 

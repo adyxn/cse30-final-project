@@ -29,8 +29,7 @@ public:
     SettingsInterface(int x, int y, int w, int h, GameState state);
 
     BoardDimensions getBoardDimensions() const;
-
-    void applyUpdates();
+    GameState applyUpdates();
     void hide();
     void show();
 
