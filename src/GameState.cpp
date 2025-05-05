@@ -13,9 +13,7 @@ GameState::GameState(int rows, int cols){
     board.clear();
 
     for (int i=0; i < rows*cols; i++) {
-
         board.append(-1);
-
     }
 
     currentTurn = 0;
@@ -24,6 +22,9 @@ GameState::GameState(int rows, int cols){
     done = false;
 
     lastMove = -1;
+
+
+    resize (rows, cols);
 
 }
 

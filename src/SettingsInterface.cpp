@@ -129,6 +129,9 @@ BoardDimensions SettingsInterface::getBoardDimensions() const {
 }
 
 GameState SettingsInterface::applyUpdates(){
+    int newRow = 0;
+    int newCol = 0;
+
     BoardDimensions dims = getBoardDimensions();
     bool shouldEnableAI = (enableAISelector->value() == 0);
     if (shouldEnableAI == true){
@@ -141,6 +144,19 @@ GameState SettingsInterface::applyUpdates(){
     bool dimsChanged = (dims.rows != state.getRows() || dims.cols != state.getCols());
     if (dimsChanged == 1){
         state.resize(dims.rows, dims.cols);
+    }
+
+    if (gridSizeSelector->value() == 0){
+        newRow = 5;
+        newCol = 5;
+    }
+    else if (gridSizeSelector->value() == 1){
+        newRow = 6;
+        newCol = 7;
+    }
+    else if (gridSizeSelector->value() == 2){
+        newRow = 7;
+        newCol = 8;
     }
 
     return state;
