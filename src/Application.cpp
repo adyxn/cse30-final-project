@@ -76,7 +76,14 @@ void Application::handleApplyBtnClick(Widget* sender){
 
     // Pull the new state out and apply to gameInterface
     state = settingsInterface->getState();
-    gameInterface->setState(state);
+    // gameInterface->setState(state);
+
+    delete gameInterface;
+    window->begin();
+    gameInterface     = new GameInterface(30,  35, 340, 340, state);
+    window->end();
+    window->redraw();
+
 
     // Hide settings and return to the game
     settingsInterface->hide();
