@@ -283,12 +283,17 @@ void GameInterface::hide() {
 }
 
 void GameInterface::reset() {
-
     state.reset();
-
     updateButtons();
 
+    std::string message = "Player vs Player";
+    if (state.getEnabledAI()) {
+        message = "Player vs AI";
+    }
+    statusBar->label(message.c_str());
+    statusBar->redraw(); // Ensure the label change is rendered
 }
+
 
 const GameState& GameInterface::getState() const{
 
